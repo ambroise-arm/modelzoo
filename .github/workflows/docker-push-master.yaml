@@ -19,12 +19,10 @@ jobs:
 
         - name: arm64 image build
           run: |
-            # Build image
-            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-            docker buildx create --use --name buildkit-builder --platform linux/amd64,linux/arm64
-            cat /proc/sys/fs/binfmt_misc/qemu-*
             export DOCKER_CLI_EXPERIMENTAL=enabled
-            docker buildx ls
+            docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+            cat /proc/sys/fs/binfmt_misc/qemu-*
+            docker buildx create --use --name buildkit-builder --platform linux/amd64,linux/arm64
             docker buildx inspect --bootstrap
             ./scripts/tvm_cli/build.sh -i "$IMAGE_NAME" -t "$TAG_NAME" --platform arm64
 
