@@ -18,6 +18,7 @@ set -e
 IMAGE_NAME="autoware/model-zoo-tvm-cli"
 TAG_NAME="local"
 FROM_ARG="ubuntu:18.04"
+TARGET_PLATFORM=""
 
 function usage() {
     echo "Usage: $0 [OPTIONS]"
@@ -27,11 +28,13 @@ function usage() {
     echo "                           Default: $IMAGE_NAME"
     echo "    -t,--tag <tag>         Tag use for the docker images."
     echo "                           Default: $TAG_NAME"
+    echo "    --platform <platform>  Use buildx and set target platform."
+    echo "                           Possible values: amd64, arm64"
     echo ""
 }
 
 OPTS=$(getopt --options chi:t: \
-         --long cuda,help,image-name:,tag: \
+         --long cuda,help,image-name:,tag:,platform: \
          --name "$0" -- "$@")
 eval set -- "$OPTS"
 
@@ -56,6 +59,10 @@ while true; do
       TAG_NAME="$2"
       shift 2
       ;;
+    --platform)
+      TARGET_PLATFORM="$2"
+      shift 2
+      ;;
     --)
       if [ -n "$2" ];
       then
@@ -73,22 +80,15 @@ done
 
 SCRIPT_PATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
-DOCKER_FILE="Dockerfile.dependencies.arm64"
-if [[ $(uname -a) == *"x86_64"* ]]; then
-    DOCKER_FILE="Dockerfile.dependencies.amd64"
-fi
-
-BASE_IMAGE_NAME="autoware/model-zoo-tvm-cli-base:local"
+DOCKER_FILE="Dockerfile.dependencies.${TARGET_PLATFORM}"
 BUILD_CONTEXT_DIR=${SCRIPT_PATH}
+export DOCKER_CLI_EXPERIMENTAL=enabled
 
 # Build base image with all dependencies
-docker build -f "${SCRIPT_PATH}"/"${DOCKER_FILE}" \
+docker buildx build -f "${SCRIPT_PATH}"/"${DOCKER_FILE}" \
              --build-arg FROM_ARG="${FROM_ARG}" \
-             -t "${BASE_IMAGE_NAME}"\
-                "${BUILD_CONTEXT_DIR}"
-
-# Build final image with tvm_cli installed
-docker build -f "${SCRIPT_PATH}"/Dockerfile \
-             --build-arg FROM_ARG="${BASE_IMAGE_NAME}" \
-             --tag "${IMAGE_NAME}":"${TAG_NAME}" \
+             -t "${IMAGE_NAME}":"${TAG_NAME}" \
+             --platform ${TARGET_PLATFORM} \
+             --progress plain \
+             --load \
                 "${BUILD_CONTEXT_DIR}"
