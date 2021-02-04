@@ -19,6 +19,7 @@ jobs:
         - name: arm64 image build
           run: |
             # Build image
+            docker buildx create --use --name buildkit-builder --platform linux/amd64,linux/arm64
             ./scripts/tvm_cli/build.sh -i "$IMAGE_NAME" -t "$TAG_NAME" --platform arm64
 
         - name: arm64 image run
