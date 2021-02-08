@@ -8,53 +8,21 @@ on:
       - 'scripts/tvm_cli/**'
 
 jobs:
+  job1:
+    runs-on: ubuntu-latest
+    outputs:
+      word: ${{ steps.needed_step.outputs.word }}
+    steps:
+      - name: Needed step
+        id: needed_step
+        run: echo "12345"
 
-  build-push-docker:
-
-      if: github.repository_owner == 'autowarefoundation'
-
-      runs-on: ubuntu-latest
-      env:
-        IMAGE_NAME: autoware/model-zoo-tvm-cli
-        TAG_NAME: bleedingedge
-
-      steps:
-
-        - name: Checkout
-          uses: actions/checkout@v2
-
-        - name: amd64 image build
-          run: |
-            docker login -u "${{ secrets.DKR_USR }}" -p "${{ secrets.DKR_PASS }}"
-            # Build image
-            ./scripts/tvm_cli/build.sh -i "$IMAGE_NAME" -t "$TAG_NAME"
-
-        - name: amd64 image push
-          run: |
-            # Push images to docker hub space
-            docker push $IMAGE_NAME:$TAG_NAME
-
-  build-push-docker-cuda:
-
-      if: github.repository_owner == 'autowarefoundation'
-
-      runs-on: ubuntu-latest
-      env:
-        IMAGE_NAME: autoware/model-zoo-tvm-cli
-        TAG_NAME: bleedingedge-cuda
-
-      steps:
-
-        - name: Checkout
-          uses: actions/checkout@v2
-
-        - name: amd64 image build with cuda
-          run: |
-            docker login -u "${{ secrets.DKR_USR }}" -p "${{ secrets.DKR_PASS }}"
-            # Build image
-            ./scripts/tvm_cli/build.sh -c -i "$IMAGE_NAME" -t "$TAG_NAME"
-
-        - name: amd64 cuda image push
-          run: |
-            # Push images to docker hub space
-            docker push $IMAGE_NAME:$TAG_NAME
+  job2:
+    runs-on: ubuntu-latest
+    needs: job1
+    strategy:
+      matrix:
+        tag: [default, ${{ needs.job1.outputs.word }}]
+    steps:
+      - name: Print
+        run: echo "${{ matrix.tag }}"
