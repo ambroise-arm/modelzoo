@@ -1,11 +1,6 @@
 name: Docker push on master
 
-on:
-  push:
-    branches:
-      - master
-    paths:
-      - 'scripts/tvm_cli/**'
+on: push
 
 jobs:
   job1:
