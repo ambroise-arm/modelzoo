@@ -8,7 +8,8 @@ jobs:
     steps:
       - name: Install docker
         run: |
-          sudo apt-get install docker
+          apt list | grep docker
+          sudo apt-get install docker-ce -y
           docker version
 
       - name: Test docker
