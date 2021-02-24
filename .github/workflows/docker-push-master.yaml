@@ -4,7 +4,7 @@ on: push
 
 jobs:
   job:
-    runs-on: ARM64
+    runs-on: ubuntu-latest
     steps:
       - name: Install docker
         run: sudo apt-get install docker
