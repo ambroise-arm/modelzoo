@@ -7,7 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install docker
-        run: sudo apt-get install docker
+        run: |
+          sudo apt-get install docker
+          docker version
 
       - name: Test docker
         run: docker version
