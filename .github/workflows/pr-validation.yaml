@@ -5,9 +5,20 @@ on:
 
 jobs:
 
-  tvm-cli-validate:
+  setup-lfs-arm64:
+      runs-on: ARM64
 
-      runs-on: ubuntu-latest
+      steps:
+        - name: Install LFS
+          run: sudo apt-get install -y git-lfs
+
+  tvm-cli-validate:
+      needs: setup-lfs-arm64
+
+      runs-on: ${{ matrix.os }}
+      strategy:
+        matrix:
+          os: [ubuntu-latest, ARM64]
 
       container:
         image: autoware/model-zoo-tvm-cli:bleedingedge

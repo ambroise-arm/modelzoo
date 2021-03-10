@@ -78,6 +78,8 @@ RUN /tmp/install_tvm.sh
 ENV HOME=/tmp
 WORKDIR /tmp
 COPY tvm_cli.py /tvm_cli/tvm_cli
+# RUN true to work around docker bug with COPY: https://github.com/moby/moby/issues/37965
+RUN true
 COPY templates /tvm_cli/templates
 # hadolint ignore=DL3044
 ENV PATH="/tvm_cli:${PATH}"
